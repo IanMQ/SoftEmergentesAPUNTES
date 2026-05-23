@@ -1,0 +1,130 @@
+@startuml
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #FEF9E3
+    BorderColor #D4A843
+    ArrowColor #333333
+}
+
+' ========== COMMAND ==========
+class ChangeEmailCommand {
+    - userId: UUID
+    - newEmail: String
+    - requestedBy: UUID
+    - requestedAt: DateTime
+    --
+    + ChangeEmailCommand(userId: UUID, newEmail: String, requestedBy: UUID)
+    + getUserId(): UUID
+    + getNewEmail(): String
+    + getRequestedBy(): UUID
+    + getRequestedAt(): DateTime
+}
+
+' ========== COMMAND HANDLER ==========
+interface CommandHandler<T> {
+    + handle(command: T): void
+}
+
+class ChangeEmailCommandHandler {
+    - userProfileRepository: UserProfileRepository
+    - emailUniquenessService: EmailUniquenessService
+    - eventPublisher: DomainEventPublisher
+    - emailVerificationService: EmailVerificationService
+    --
+    + ChangeEmailCommandHandler(
+        userProfileRepository: UserProfileRepository,
+        emailUniquenessService: EmailUniquenessService,
+        eventPublisher: DomainEventPublisher,
+        emailVerificationService: EmailVerificationService
+    )
+    + handle(command: ChangeEmailCommand): void
+    - validateEmailFormat(email: String): Boolean
+    - validateEmailUniqueness(email: String): Boolean
+    - initiateVerification(userId: UUID, newEmail: String): void
+}
+
+' ========== REPOSITORY ==========
+interface UserProfileRepository {
+    + findById(userId: UUID): UserProfile
+    + save(userProfile: UserProfile): void
+    + existsByEmail(email: Email): Boolean
+}
+
+' ========== DOMAIN SERVICES ==========
+interface EmailUniquenessService {
+    + isUnique(email: String): Boolean
+    + reserveEmail(email: String, userId: UUID): void
+    + releaseEmail(email: String): void
+}
+
+interface EmailVerificationService {
+    + sendVerificationCode(email: String, userId: UUID): void
+    + verifyCode(email: String, code: String): Boolean
+}
+
+interface DomainEventPublisher {
+    + publish(event: DomainEvent): void
+}
+
+' ========== DOMAIN EVENT ==========
+class EmailChangeRequestedEvent {
+    - userId: UUID
+    - oldEmail: String
+    - newEmail: String
+    - requestedAt: DateTime
+    - status: EmailChangeStatus
+    --
+    + EmailChangeRequestedEvent(userId, oldEmail, newEmail, requestedAt)
+    + getUserId(): UUID
+    + getNewEmail(): String
+    + getOldEmail(): String
+    + getStatus(): EmailChangeStatus
+}
+
+enum EmailChangeStatus {
+    PENDING_VERIFICATION
+    VERIFIED
+    COMPLETED
+    REJECTED
+    EXPIRED
+}
+
+' ========== VALUE OBJECT (del dominio) ==========
+class Email {
+    - value: String
+    --
+    + Email(value: String)
+    + getValue(): String
+    + isValid(): Boolean
+    + getDomain(): String
+    + equals(other: Email): Boolean
+}
+
+' ========== AGGREGATE ROOT (parcial, de la P3) ==========
+class UserProfile {
+    - userId: UUID
+    - email: Email
+    - fullName: String
+    - isActive: Boolean
+    --
+    + changeEmail(newEmail: Email): void
+    + confirmEmailChange(): void
+    + rejectEmailChange(reason: String): void
+}
+
+' ========== RELACIONES ==========
+ChangeEmailCommandHandler ..|> CommandHandler
+ChangeEmailCommandHandler --> UserProfileRepository : uses
+ChangeEmailCommandHandler --> EmailUniquenessService : uses
+ChangeEmailCommandHandler --> DomainEventPublisher : uses
+ChangeEmailCommandHandler --> EmailVerificationService : uses
+ChangeEmailCommandHandler --> ChangeEmailCommand : handles
+
+ChangeEmailCommandHandler --> EmailChangeRequestedEvent : creates and publishes
+EmailChangeRequestedEvent --> EmailChangeStatus : has
+
+UserProfileRepository --> UserProfile : manages
+UserProfile --> Email : contains
+
+@enduml
