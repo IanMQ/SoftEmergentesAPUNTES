@@ -1,0 +1,240 @@
+workspace "EduFlow Digital Corp." "Arquitectura de Software Emergentes - Examen Parcial" {
+
+    model {
+        # ========== 1. PERSONAS (ACTORES) ==========
+        clienteInstitucional = person "Cliente Institucional" "Institución educativa o empresa que contrata EduFlow"
+        profesionalIndependiente = person "Profesional Independiente" "Usuario individual que paga suscripción"
+        citizenDeveloper = person "Citizen Developer" "Usuario no técnico que crea apps con No-Code"
+        administradorTI = person "Administrador TI" "Gestiona usuarios, suscripciones y plataforma"
+
+        # ========== 2. SISTEMAS EXTERNOS ==========
+        sistemaPagos = softwareSystem "Sistema de Pagos" "Stripe / Microsoft Pay" "External,Pagos"
+        sistemaERPCRM = softwareSystem "ERP/CRM Cliente" "Sistemas empresariales externos del cliente" "External,ERP"
+        
+        # ========== 3. SISTEMA PRINCIPAL ==========
+        eduflow = softwareSystem "EduFlow Integrated Digital Platform" "Plataforma digital integrada para automatización y creación rápida de aplicaciones" {
+            
+            # === 3.1 CONTENEDORES - FRONTENDS ===
+            webApp = container "Web App" "Aplicación web principal para administradores y clientes" "Angular 17 / TypeScript" "Angular,WebApp"
+            mobileApp = container "Mobile App" "App móvil empresarial para Android/iOS" "Flutter / React Native" "MobileApp"
+            powerAppsPortal = container "Power Apps Portal" "Plataforma No-Code para Citizen Developers" "Power Apps / Power Pages" "PowerPlatform,NoCode"
+            
+            # === 3.2 CONTENEDOR - API GATEWAY ===
+            apiGateway = container "API Gateway" "Punto de entrada único para todas las peticiones" "Azure API Management" "Gateway"
+            
+            # === 3.3 CONTENEDORES - MICROSERVICIOS (BOUNDED CONTEXTS) ===
+            # Cada BC es un contenedor independiente (microservicio)
+            iamContext = container "Identity & Access Management" "Autenticación, SSO, gestión de identidades y autorización" "Azure Functions / Azure AD B2C" "Bounded Context,Microservice"
+            billingContext = container "Subscription & Billing Management" "Gestión de suscripciones, facturación y pagos" "Azure Functions / Stripe" "Bounded Context,Microservice"
+            workflowContext = container "Workflow Management" "Automatización de procesos y workflows empresariales" "Power Automate / Logic Apps" "Bounded Context,Microservice"
+            noCodeContext = container "No-Code App Builder" "Constructor visual de aplicaciones No-Code" "Power Apps / Azure Functions" "Bounded Context,Microservice"
+            lowCodeContext = container "Low-Code Integration Services" "Integración con ERP, CRM y sistemas externos" "Azure Logic Apps / API Management" "Bounded Context,Microservice"
+            analyticsContext = container "Digital Analytics Services" "Dashboards, KPIs y reporting avanzado" "Power BI / Azure Synapse" "Bounded Context,Microservice"
+            aiContext = container "AI Assistant Services" "Asistentes virtuales con IA Generativa" "Azure OpenAI Service / Functions" "Bounded Context,Microservice"
+            notificationContext = container "Notification & Messaging Services" "Envío de notificaciones y mensajes" "Azure Event Grid / Functions" "Bounded Context,Microservice"
+            contentContext = container "Content & Document Management" "Gestión documental y firma electrónica" "Azure Blob Storage / Functions" "Bounded Context,Microservice"
+            userProfileContext = container "User Profiles" "Gestión de perfiles de usuario y preferencias" "AKS / Azure Functions" "Bounded Context,Microservice"
+            apiIntegrationContext = container "API Integration Services" "Gestión centralizada de APIs y conectores" "Azure API Management / Logic Apps" "Bounded Context,Microservice"
+            sharedContext = container "Shared Services" "Servicios transversales (logging, monitoreo, caché)" "Azure Redis / App Insights" "Shared Kernel,Microservice"
+            
+            # === 3.4 CONTENEDORES - INFRAESTRUCTURA ===
+            platformDatabase = container "Platform PostgreSQL" "Almacena suscripciones, perfiles, workflows, documentos" "PostgreSQL Flexible Server" "Database"
+            platformRedis = container "Platform Redis Cache" "Sesiones, tokens, rate limiting, caché distribuido" "Azure Cache for Redis" "Redis"
+            blobStorage = container "Blob Storage" "Documentos, imágenes, configuraciones de apps No-Code" "Azure Blob Storage" "Storage"
+            eventGrid = container "Event Grid" "Mensajería asíncrona entre microservicios" "Azure Event Grid" "MessageBroker"
+        }
+
+        # ========== 4. RELACIONES DE PERSONAS CON SISTEMA ==========
+        clienteInstitucional -> eduflow "Contrata servicios y accede a dashboards" "HTTPS"
+        profesionalIndependiente -> eduflow "Paga suscripción y accede a contenido" "HTTPS"
+        citizenDeveloper -> eduflow "Crea aplicaciones No-Code" "HTTPS"
+        administradorTI -> eduflow "Administra plataforma y usuarios" "HTTPS"
+        
+        # Relaciones directas de personas a contenedores específicos
+        administradorTI -> webApp "Gestiona la plataforma" "HTTPS"
+        clienteInstitucional -> webApp "Accede a dashboards y cursos" "HTTPS"
+        profesionalIndependiente -> mobileApp "Accede desde dispositivos móviles" "HTTPS"
+        citizenDeveloper -> powerAppsPortal "Crea y publica aplicaciones" "HTTPS"
+        
+        # ========== 5. RELACIONES DEL SISTEMA CON EXTERNOS ==========
+        eduflow -> sistemaPagos "Procesa suscripciones y pagos" "Stripe API / Microsoft Pay API"
+        eduflow -> sistemaERPCRM "Se integra con sistemas del cliente" "REST / SOAP / OData"
+
+        # ========== 6. RELACIONES DE CONTENEDORES A CONTENEDORES ==========
+        # Frontends -> API Gateway
+        webApp -> apiGateway "Consume APIs protegidas" "HTTPS/REST"
+        mobileApp -> apiGateway "Consume APIs para móvil" "HTTPS/REST"
+        powerAppsPortal -> apiGateway "Consume APIs para No-Code" "HTTPS/REST"
+        
+        # API Gateway -> Microservicios (Bounded Contexts)
+        apiGateway -> iamContext "Rutea peticiones de auth" "HTTPS/REST"
+        apiGateway -> billingContext "Rutea peticiones de suscripciones" "HTTPS/REST"
+        apiGateway -> workflowContext "Rutea peticiones de workflows" "HTTPS/REST"
+        apiGateway -> noCodeContext "Rutea peticiones de No-Code" "HTTPS/REST"
+        apiGateway -> lowCodeContext "Rutea peticiones de integración" "HTTPS/REST"
+        apiGateway -> analyticsContext "Rutea peticiones de analytics" "HTTPS/REST"
+        apiGateway -> aiContext "Rutea peticiones de AI" "HTTPS/REST"
+        apiGateway -> notificationContext "Rutea peticiones de notificaciones" "HTTPS/REST"
+        apiGateway -> contentContext "Rutea peticiones de documentos" "HTTPS/REST"
+        apiGateway -> userProfileContext "Rutea peticiones de perfiles" "HTTPS/REST"
+        apiGateway -> apiIntegrationContext "Rutea peticiones de APIs" "HTTPS/REST"
+        apiGateway -> sharedContext "Rutea peticiones de servicios comunes" "HTTPS/REST"
+        
+        # Microservicios -> Infraestructura
+        iamContext -> platformDatabase "Almacena usuarios y roles" "SQL"
+        iamContext -> platformRedis "Almacena sesiones y tokens" "RESP"
+        
+        billingContext -> platformDatabase "Almacena suscripciones e invoices" "SQL"
+        billingContext -> sistemaPagos "Procesa checkout y webhooks" "Stripe API"
+        
+        workflowContext -> platformDatabase "Almacena definiciones de workflows" "SQL"
+        workflowContext -> notificationContext "Envía notificaciones al completar workflow" "REST"
+        workflowContext -> eventGrid "Publica eventos de workflow" "MQTT/AMQP"
+        
+        noCodeContext -> blobStorage "Guarda definiciones de apps" "REST API"
+        noCodeContext -> contentContext "Publica apps generadas" "REST"
+        
+        lowCodeContext -> apiIntegrationContext "Usa conectores predefinidos" "REST"
+        lowCodeContext -> sistemaERPCRM "Conecta con sistemas externos" "REST/SOAP"
+        lowCodeContext -> eventGrid "Publica eventos de integración" "MQTT/AMQP"
+        
+        analyticsContext -> platformDatabase "Lee datos para reports" "SQL"
+        
+        aiContext -> analyticsContext "Consulta datos para respuestas" "gRPC/REST"
+        
+        notificationContext -> platformDatabase "Almacena histórico de notificaciones" "SQL"
+        
+        contentContext -> blobStorage "Almacena documentos" "REST API"
+        
+        userProfileContext -> platformDatabase "Almacena perfiles" "SQL"
+        
+        sharedContext -> platformRedis "Caché distribuido" "RESP"
+    }
+
+    # ========== 7. VISTAS ==========
+    views {
+        # VISTA 1: Diagrama de Contexto (Pregunta 1)
+        systemContext eduflow "Pregunta1_ContextDiagram" {
+            title "Pregunta 1: Diagrama de Contexto - EduFlow Digital Corp."
+            description "Muestra la interacción de usuarios y sistemas externos con la plataforma EduFlow Integrated Digital Platform."
+            include *
+            autoLayout lr
+        }
+        
+        # VISTA 2: Diagrama de Contenedores (Pregunta 2)
+        container eduflow "Pregunta2_ContainersDiagram" {
+            title "Pregunta 2: Diagrama de Contenedores - Arquitectura de Microservicios"
+            description "Muestra todos los contenedores: frontends, API Gateway, 12 microservicios (bounded contexts), infraestructura (DB, Redis, Blob, Event Grid), y sistemas externos."
+            
+            # Frontends
+            include webApp
+            include mobileApp
+            include powerAppsPortal
+            
+            # API Gateway
+            include apiGateway
+            
+            # Microservicios (todos los BC como contenedores)
+            include iamContext
+            include billingContext
+            include workflowContext
+            include noCodeContext
+            include lowCodeContext
+            include analyticsContext
+            include aiContext
+            include notificationContext
+            include contentContext
+            include userProfileContext
+            include apiIntegrationContext
+            include sharedContext
+            
+            # Infraestructura
+            include platformDatabase
+            include platformRedis
+            include blobStorage
+            include eventGrid
+            
+            # Sistemas externos
+            include sistemaPagos
+            include sistemaERPCRM
+            
+            # Personas
+            include clienteInstitucional
+            include profesionalIndependiente
+            include citizenDeveloper
+            include administradorTI
+            
+            autoLayout lr
+        }
+        
+        # ========== 8. ESTILOS ==========
+        styles {
+            element "Person" {
+                shape person
+                background #374151
+                color #ffffff
+            }
+            element "Software System" {
+                background #2563eb
+                color #ffffff
+            }
+            element "External" {
+                background #9ca3af
+                color #ffffff
+            }
+            element "Pagos" {
+                background #635bff
+            }
+            element "ERP" {
+                background #ea580c
+            }
+            element "Container" {
+                background #1d4ed8
+                color #ffffff
+            }
+            element "Angular" {
+                background #dc2626
+            }
+            element "WebApp" {
+                background #dc2626
+            }
+            element "MobileApp" {
+                shape MobileDevicePortrait
+                background #0284c7
+            }
+            element "PowerPlatform" {
+                background #0f766e
+            }
+            element "NoCode" {
+                background #0d9488
+            }
+            element "Gateway" {
+                background #7c3aed
+            }
+            element "Bounded Context" {
+                background #0891b2
+            }
+            element "Microservice" {
+                background #0891b2
+            }
+            element "Shared Kernel" {
+                background #6b21a5
+            }
+            element "Database" {
+                shape cylinder
+                background #4b5563
+            }
+            element "Storage" {
+                shape cylinder
+                background #ea580c
+            }
+            element "Redis" {
+                shape cylinder
+                background #dc382d
+            }
+            element "MessageBroker" {
+                background #0891b2
+            }
+        }
+    }
+}
