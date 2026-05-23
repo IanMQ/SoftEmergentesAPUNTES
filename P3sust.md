@@ -1,3 +1,6 @@
+Sustento (párrafo corto para la P3)
+He seleccionado el bounded context User Profiles. El aggregate root es UserProfile, que contiene un Email como Value Object por ser inmutable y tener su propia validación. UserProfile expone métodos de negocio como createProfile(), changeEmail(), activate() y deactivate(). Se incluye la enumeración Language para los idiomas soportados. Esta estructura cumple con DDD al encapsular las reglas de negocio dentro del aggregate, manteniendo la simplicidad para facilitar su implementación.
+
 User Profiles
 
 Criterios y Sustento de decisión
