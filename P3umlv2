@@ -1,0 +1,32 @@
+@startuml
+
+class UserProfile {
+    - userId: String
+    - fullName: String
+    - email: Email
+    - isActive: Boolean
+    --
+    + createProfile(name, email): UserProfile
+    + changeEmail(newEmail: Email): void
+    + activate(): void
+    + deactivate(): void
+}
+
+class Email {
+    - value: String
+    --
+    + Email(value: String)
+    + isValid(): Boolean
+    + getValue(): String
+}
+
+enum Language {
+    ENGLISH
+    SPANISH
+    FRENCH
+}
+
+UserProfile "1" *-- "1" Email : contains >
+UserProfile --> Language : has >
+
+@enduml
