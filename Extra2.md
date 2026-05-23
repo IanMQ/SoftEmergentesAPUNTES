@@ -95,7 +95,8 @@ Reglas de negocio asociadas:
 [Regla 2]
 
 Paso 2: Código PlantUML del diagrama CQRS
-plantuml
+
+```plantuml
 @startuml
 
 class [NombreCommand] {
@@ -132,35 +133,7 @@ class [NombreAggregateRoot] {
 [NombreRepository] --> [NombreAggregateRoot] : manages
 
 @enduml
-Paso 3: Texto alternativo (para dibujo a mano)
-text
-[NombreCommand] <<Command>>
-├─ - [parametro1]: String
-├─ - [parametro2]: String
-├─ + [NombreCommand]([parametro1], [parametro2])
-├─ + get[Parametro1](): String
-└─ + get[Parametro2](): String
-
-[NombreCommandHandler] <<CommandHandler>>
-├─ - repository: [NombreRepository]
-├─ + [NombreCommandHandler](repository)
-└─ + handle(command): void
-
-[NombreRepository] <<interface>>
-├─ + findById(id): [NombreAggregateRoot]
-└─ + save(aggregate): void
-
-[NombreAggregateRoot]
-├─ - id: String
-├─ - [atributo]: String
-├─ - isActive: Boolean
-└─ + [metodoNegocio]([parametro]): void
-
-Relaciones:
-[NombreCommandHandler] --> [NombreRepository] : uses
-[NombreCommandHandler] --> [NombreCommand] : handles
-[NombreRepository] --> [NombreAggregateRoot] : manages
-
+```
 
 Paso 5: Párrafo de sustentación (plantilla)
 Para la aplicación de CQRS dentro del mismo bounded context [Nombre del BC] , he seleccionado el comando [NombreCommand] por ser significativo desde el punto de vista del negocio y por ilustrar la separación entre operaciones de escritura (command) y consultas (query). Este comando involucra reglas de negocio no triviales: [enumerar reglas de negocio brevemente]. Se ha elegido este comando para mostrar la riqueza de reglas de negocio que incluso un BC de soporte puede contener.
