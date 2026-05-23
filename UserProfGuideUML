@@ -1,0 +1,94 @@
+@startuml
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #FEF9E3
+    BorderColor #D4A843
+    ArrowColor #333333
+}
+
+class UserProfile {
+    - userId: UUID
+    - fullName: String
+    - email: Email
+    - phoneNumber: String
+    - address: Address
+    - notificationPreferences: NotificationPreferences
+    - preferredLanguage: Language
+    - timezone: String
+    - createdAt: DateTime
+    - updatedAt: DateTime
+    - isActive: Boolean
+    --
+    + createProfile(fullName, email, phoneNumber): UserProfile
+    + updateProfile(fullName, phoneNumber, address): void
+    + changeEmail(newEmail: Email): void
+    + updateNotificationPreferences(preferences: NotificationPreferences): void
+    + updateLanguage(language: Language): void
+    + activate(): void
+    + deactivate(): void
+    + getNotificationPreferences(): NotificationPreferences
+}
+
+class Email {
+    - value: String
+    --
+    + Email(value: String)
+    + getValue(): String
+    + isValid(): Boolean
+    + getDomain(): String
+}
+
+class Address {
+    - street: String
+    - city: String
+    - state: String
+    - postalCode: String
+    - country: String
+    --
+    + Address(street, city, state, postalCode, country)
+    + getFullAddress(): String
+    + isValid(): Boolean
+}
+
+enum Language {
+    ENGLISH
+    SPANISH
+    FRENCH
+    PORTUGUESE
+}
+
+class NotificationPreferences {
+    - emailEnabled: Boolean
+    - smsEnabled: Boolean
+    - pushEnabled: Boolean
+    - marketingEmails: Boolean
+    - weeklyDigest: Boolean
+    - alertThreshold: AlertThreshold
+    --
+    + NotificationPreferences(emailEnabled, smsEnabled, pushEnabled)
+    + enableEmail(): void
+    + disableEmail(): void
+    + enableSms(): void
+    + disableSms(): void
+    + enablePush(): void
+    + disablePush(): void
+    + canSendEmail(): Boolean
+    + canSendSms(): Boolean
+    + canSendPush(): Boolean
+}
+
+enum AlertThreshold {
+    IMMEDIATE
+    HOURLY
+    DAILY
+    NEVER
+}
+
+UserProfile "1" *-- "1" Email : contains >
+UserProfile "1" *-- "1" Address : contains >
+UserProfile "1" *-- "1" NotificationPreferences : contains >
+UserProfile "1" --> "1" Language : has >
+NotificationPreferences --> AlertThreshold : has >
+
+@enduml
